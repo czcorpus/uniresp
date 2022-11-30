@@ -40,13 +40,13 @@ func (me ActionError) MarshalJSON() ([]byte, error) {
 	return json.Marshal(me.Error())
 }
 
-func NewActionErrorFrom(message string, origErr error) ActionError {
-	return ActionError{fmt.Errorf("%s: %w", message, origErr)}
+func NewActionErrorFrom(err error) ActionError {
+	return ActionError{err}
 }
 
 // NewActionError creates an Action error from provided message using
 // a newly defined general error as the original error
-func NewActionError(msg string, args ...interface{}) ActionError {
+func NewActionError(msg string, args ...any) ActionError {
 	return ActionError{fmt.Errorf(msg, args...)}
 }
 
@@ -58,7 +58,7 @@ type ErrorResponse struct {
 }
 
 // WriteJSONResponse writes 'value' to an HTTP response encoded as JSON
-func WriteJSONResponse(w http.ResponseWriter, value interface{}) {
+func WriteJSONResponse(w http.ResponseWriter, value any) {
 	jsonAns, err := json.Marshal(value)
 	if err != nil {
 		log.Err(err).Msg("failed to encode a result to JSON")
@@ -69,7 +69,7 @@ func WriteJSONResponse(w http.ResponseWriter, value interface{}) {
 }
 
 // WriteJSONResponseWithStatus writes 'value' to an HTTP response encoded as JSON
-func WriteJSONResponseWithStatus(w http.ResponseWriter, status int, value interface{}) {
+func WriteJSONResponseWithStatus(w http.ResponseWriter, status int, value any) {
 	jsonAns, err := json.Marshal(value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -101,7 +101,7 @@ func testEtagValues(headerValue, testValue string) bool {
 // but before doing that it calculates a checksum of the JSON and in case it is
 // equal to provided 'If-Match' header, 304 is returned. Otherwise a value with
 // ETag header is returned.
-func WriteCacheableJSONResponse(w http.ResponseWriter, req *http.Request, value interface{}) {
+func WriteCacheableJSONResponse(w http.ResponseWriter, req *http.Request, value any) {
 	jsonAns, err := json.Marshal(value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
